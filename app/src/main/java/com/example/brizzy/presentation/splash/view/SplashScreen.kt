@@ -35,6 +35,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import androidx.compose.runtime.getValue
 import com.example.brizzy.R
+import com.example.brizzy.presentation.navigation.ScreenRouts
 
 @Composable
 fun SplashScreen(navController: NavController) {
@@ -53,10 +54,10 @@ fun SplashScreen(navController: NavController) {
 
         delay(2500)
 
-        /* navController.navigate("home_screen") {
-            popUpTo("splash_screen") { inclusive = true }
+        navController.navigate(ScreenRouts.Home) {
+            popUpTo(ScreenRouts.Splash) { inclusive = true }
+
         }
-        */
     }
 
     val darkBlueTop = Color(0xFF0A1128)
@@ -101,11 +102,13 @@ fun SplashScreen(navController: NavController) {
                     composition = composition,
                     iterations = LottieConstants.IterateForever
                 )
-                
+
                 LottieAnimation(
                     composition = composition,
                     progress = { progress },
-                    modifier = Modifier.size(130.dp).align(alignment = Alignment.Center)
+                    modifier = Modifier
+                        .size(130.dp)
+                        .align(alignment = Alignment.Center)
                 )
             }
 
@@ -166,6 +169,7 @@ fun StarryBackground() {
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
