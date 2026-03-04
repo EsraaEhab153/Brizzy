@@ -1,4 +1,4 @@
-package com.example.brizzy.ui.theme
+package com.example.brizzy.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
