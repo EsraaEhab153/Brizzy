@@ -6,6 +6,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.brizzy.presentation.splash.view.SplashScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.brizzy.data.weather.WeatherRepositoryImp
+import com.example.brizzy.data.weather.datasource.remote.WeatherRemoteDataSourceImpl
+import com.example.brizzy.presentation.home.view.HomeScreen
+import com.example.brizzy.presentation.home.viewModel.HomeViewModel
+import com.example.brizzy.presentation.home.viewModel.HomeViewModelFactory
 
 @Composable
 fun SetupNavHost() {
@@ -22,7 +28,12 @@ fun SetupNavHost() {
 
         // Home
         composable<ScreenRouts.Home> {
-            Text(text = "Welcome to Home Screen!")
+            val remoteDataSource = WeatherRemoteDataSourceImpl()
+            val repository = WeatherRepositoryImp(remoteDataSource)
+            val factory = HomeViewModelFactory(repository)
+            val homeViewModel: HomeViewModel = viewModel(factory = factory)
+
+            HomeScreen(viewModel = homeViewModel)
         }
     }
 }
