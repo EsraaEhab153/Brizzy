@@ -13,12 +13,16 @@ data class ForecastItem(
     val weather: List<WeatherDetails>,
     val clouds: Clouds,
     val wind: Wind,
+    val visibility: Int,
     @SerializedName("dt_txt")
     val dtTxt: String
 )
 
 data class MainParams(
     val temp: Double,
+    @SerializedName("feels_like") val feelsLike: Double,
+    @SerializedName("temp_min") val tempMin: Double,
+    @SerializedName("temp_max") val tempMax: Double,
     val pressure: Int,
     val humidity: Int
 )
@@ -40,5 +44,7 @@ data class Wind(
 
 data class City(
     val name: String,
-    val country: String
+    val country: String,
+    val sunrise: Long,
+    val sunset: Long
 )
