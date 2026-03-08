@@ -37,9 +37,12 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import androidx.annotation.RawRes
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.layout.ContentScale
 import com.airbnb.lottie.compose.LottieAnimation
 import com.example.brizzy.R
+
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel) {
@@ -49,18 +52,31 @@ fun HomeScreen(viewModel: HomeViewModel) {
         viewModel.getWeatherData(lat = 30.7865, lon = 31.0004)
     }
 
-    val bgGradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF0F7ED0), Color(0xFF145AB2))
+  val iconCode = if (uiState is UiState.Success) {
+        (uiState as UiState.Success).data.list[0].weather[0].icon
+    } else null
+
+    val targetColors = getWeatherBackgroundColors(iconCode)
+
+   val topColor by animateColorAsState(
+        targetValue = targetColors[0],
+        animationSpec = tween(durationMillis = 1000),
+        label = "Top Color Animation"
+    )
+    val bottomColor by animateColorAsState(
+        targetValue = targetColors[1],
+        animationSpec = tween(durationMillis = 1000),
+        label = "Bottom Color Animation"
     )
 
+    val animatedGradient = Brush.verticalGradient(listOf(topColor, bottomColor))
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(bgGradient)
+            .background(animatedGradient)
     ) {
         when (uiState) {
             is UiState.Loading -> {
-//
                 val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.weather))
 
                 val progress by animateLottieCompositionAsState(
@@ -379,5 +395,25 @@ fun getWeatherLottieAnim(iconCode: String): Int {
         "50d", "50n" -> R.raw.mist
 
         else -> R.raw.weather_windy
+    }
+}
+
+fun getWeatherBackgroundColors(iconCode: String?): List<Color> {
+    return when (iconCode) {
+        "01d" -> listOf(Color(0xFF29B2DD), Color(0xFF33AADD))
+
+        "01n" -> listOf(Color(0xFF08244F), Color(0xFF134CB5))
+
+        "02d", "03d", "04d" -> listOf(Color(0xFF5983A8), Color(0xFF86A8C9))
+
+        "02n", "03n", "04n" -> listOf(Color(0xFF1E2836), Color(0xFF304052))
+
+        "09d", "10d", "11d", "50d" -> listOf(Color(0xFF4A5E6D), Color(0xFF677E90))
+
+        "09n", "10n", "11n", "50n" -> listOf(Color(0xFF141E30), Color(0xFF243B55))
+
+        "13d", "13n" -> listOf(Color(0xFF6A93CB), Color(0xFFA4BFE3))
+
+        else -> listOf(Color(0xFF2B70E4), Color(0xFF0F2B6B))
     }
 }
