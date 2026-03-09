@@ -204,7 +204,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
 
                     DailyForecastSection(dailyList)
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(60.dp))
                 }
             }
         }
