@@ -1,7 +1,7 @@
 package com.example.brizzy.presentation.home.view
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,9 +39,14 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import androidx.annotation.RawRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import com.airbnb.lottie.compose.LottieAnimation
 import com.example.brizzy.R
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import com.example.brizzy.data.weather.model.City
 
 
 @Composable
@@ -52,13 +57,13 @@ fun HomeScreen(viewModel: HomeViewModel) {
         viewModel.getWeatherData(lat = 30.7865, lon = 31.0004)
     }
 
-  val iconCode = if (uiState is UiState.Success) {
+    val iconCode = if (uiState is UiState.Success) {
         (uiState as UiState.Success).data.list[0].weather[0].icon
     } else null
 
     val targetColors = getWeatherBackgroundColors(iconCode)
 
-   val topColor by animateColorAsState(
+    val topColor by animateColorAsState(
         targetValue = targetColors[0],
         animationSpec = tween(durationMillis = 1000),
         label = "Top Color Animation"
@@ -92,13 +97,27 @@ fun HomeScreen(viewModel: HomeViewModel) {
                         .align(alignment = Alignment.Center)
                 )
             }
+
             is UiState.Error -> {
                 val error = (uiState as UiState.Error).message
                 Text(text = error, color = Color.Red, modifier = Modifier.align(Alignment.Center))
             }
+
             is UiState.Success -> {
                 val weatherData = (uiState as UiState.Success).data
                 val currentWeather = weatherData.list[0]
+
+                val dailyList = weatherData.list.groupBy { it.dtTxt.substringBefore(" ") }
+                    .map { entry ->
+                        val dayItems = entry.value
+                        val dailyMax = dayItems.maxOf { it.main.tempMax }
+                        val dailyMin = dayItems.minOf { it.main.tempMin }
+                        val firstItem = dayItems.first()
+                        firstItem.copy(
+                            main = firstItem.main.copy(tempMax = dailyMax, tempMin = dailyMin)
+                        )
+                    }
+                    .take(5)
 
                 Column(
                     modifier = Modifier
@@ -122,11 +141,25 @@ fun HomeScreen(viewModel: HomeViewModel) {
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val currentDateTime =
+                        SimpleDateFormat("EEE, MMM d • hh:mm a", Locale.getDefault()).format(
+                            Date(System.currentTimeMillis())
+                        )
 
+                    Text(
+                        text = currentDateTime,
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(32.dp))
                     val animResId = getWeatherLottieAnim(currentWeather.weather[0].icon)
 
-                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(animResId))
+                    val composition by rememberLottieComposition(
+                        LottieCompositionSpec.RawRes(
+                            animResId
+                        )
+                    )
                     val progress by animateLottieCompositionAsState(
                         composition = composition,
                         iterations = LottieConstants.IterateForever
@@ -137,13 +170,6 @@ fun HomeScreen(viewModel: HomeViewModel) {
                         progress = { progress },
                         modifier = Modifier.size(150.dp)
                     )
-
-//                    val mainIconUrl = "https://openweathermap.org/img/wn/${currentWeather.weather[0].icon}@4x.png"
-//                    AsyncImage(
-//                        model = mainIconUrl,
-//                        contentDescription = "Weather Icon",
-//                        modifier = Modifier.size(150.dp)
-//                    )
 
                     Text(
                         text = "${currentWeather.main.temp.roundToInt()}°",
@@ -160,14 +186,14 @@ fun HomeScreen(viewModel: HomeViewModel) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        WeatherChip("↑ ${currentWeather.main.tempMax.roundToInt()}°")
-                        WeatherChip("↓ ${currentWeather.main.tempMin.roundToInt()}°")
+                        WeatherChip("↑ ${dailyList[0].main.tempMax.roundToInt()}°")
+                        WeatherChip("↓ ${dailyList[0].main.tempMin.roundToInt()}°")
                         WeatherChip("Feels ${currentWeather.main.feelsLike.roundToInt()}°")
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    WeatherDetailsGrid(currentWeather)
+                    WeatherDetailsGrid(currentWeather = currentWeather, city = weatherData.city)
 
                     Spacer(modifier = Modifier.height(32.dp))
 
@@ -175,10 +201,6 @@ fun HomeScreen(viewModel: HomeViewModel) {
                     HourlyForecastSection(hourlyList)
 
                     Spacer(modifier = Modifier.height(32.dp))
-
-                      val dailyList = weatherData.list.groupBy { it.dtTxt.substringBefore(" ") }
-                        .map { it.value.first() }
-                        .take(5)
 
                     DailyForecastSection(dailyList)
 
@@ -205,24 +227,115 @@ fun WeatherChip(text: String) {
 }
 
 @Composable
-fun WeatherDetailsGrid(currentWeather: ForecastItem) {
+fun WeatherDetailsGrid(currentWeather: ForecastItem,city: City) {
+    val sunriseTime = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(city.sunrise * 1000))
+    val sunsetTime = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(city.sunset * 1000))
+
     Surface(
         color = Color.White.copy(alpha = 0.15f),
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                DetailItem("Humidity", "${currentWeather.main.humidity}%")
-                DetailItem("Wind", "${currentWeather.wind.speed} m/s")
-                DetailItem("Pressure", "${currentWeather.main.pressure} hPa")
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                WeatherDetailChip(
+                    iconRes = R.drawable.humidity,
+                    title = "Humidity",
+                    value = "${currentWeather.main.humidity}%",
+                    modifier = Modifier.weight(1f)
+                )
+                WeatherDetailChip(
+                    iconRes = R.drawable.windy,
+                    title = "Wind",
+                    value = "${currentWeather.wind.speed.roundToInt()} km/h",
+                    modifier = Modifier.weight(1f)
+                )
+                WeatherDetailChip(
+                    iconRes = R.drawable.barometer,
+                    title = "Pressure",
+                    value = "${currentWeather.main.pressure} hPa",
+                    modifier = Modifier.weight(1f)
+                )
+                WeatherDetailChip(
+                    iconRes = R.drawable.cloud,
+                    title = "Clouds",
+                    value = "${currentWeather.clouds.all}%",
+                    modifier = Modifier.weight(1f)
+                )
             }
-            Spacer(modifier = Modifier.height(24.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                DetailItem("Clouds", "${currentWeather.clouds.all}%")
-                DetailItem("Visibility", "${currentWeather.visibility / 1000} km")
-                DetailItem("Feels Like", "${currentWeather.main.feelsLike.roundToInt()}°C")
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                WeatherDetailChip(
+                    iconRes = R.drawable.visible,
+                    title = "Visibility",
+                    value = "${currentWeather.visibility / 1000} km",
+                    modifier = Modifier.weight(1f)
+                )
+                WeatherDetailChip(
+                    iconRes = R.drawable.thermostat,
+                    title = "Feels Like",
+                    value = "${currentWeather.main.feelsLike.roundToInt()}°C",
+                    modifier = Modifier.weight(1f)
+                )
             }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                WeatherDetailChip(iconRes = R.drawable.sunrise, title = "Sunrise", value = sunriseTime, modifier = Modifier.weight(1f))
+               WeatherDetailChip(iconRes = R.drawable.dawn, title = "Sunset", value = sunsetTime, modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+fun WeatherDetailChip(
+    @DrawableRes iconRes: Int,
+    title: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = Color.White.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(16.dp),
+        modifier = modifier
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(id = iconRes),
+                contentDescription = title,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = value,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp,
+                maxLines = 1
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = title,
+                color = Color.White.copy(alpha = 0.6f),
+                fontSize = 10.sp,
+                maxLines = 1
+            )
         }
     }
 }
@@ -282,14 +395,8 @@ fun HourlyItem(item: ForecastItem) {
                 composition = composition,
                 progress = { progress },
                 modifier = Modifier.size(70.dp),
-             contentScale = ContentScale.Fit
+                contentScale = ContentScale.Fit
             )
-//            val iconUrl = "https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png"
-//            AsyncImage(
-//                model = iconUrl,
-//                contentDescription = null,
-//                modifier = Modifier.size(40.dp)
-//            )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "${item.main.temp.roundToInt()}°",
@@ -303,23 +410,25 @@ fun HourlyItem(item: ForecastItem) {
 
 @Composable
 fun DailyForecastSection(dailyList: List<ForecastItem>) {
-    Surface(
-        color = Color.White.copy(alpha = 0.15f),
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = "5-Day Forecast",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+    Column(modifier = Modifier.padding(0.dp)) {
+        Text(
+            text = "5-Day Forecast",
+            color = Color.White,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        Surface(
+            color = Color.White.copy(alpha = 0.15f),
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
 
-            dailyList.forEach { item ->
-                DailyItem(item)
-                Spacer(modifier = Modifier.height(16.dp))
+                dailyList.forEach { item ->
+                    DailyItem(item)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
         }
     }
@@ -350,21 +459,17 @@ fun DailyItem(item: ForecastItem) {
             modifier = Modifier.size(50.dp),
             contentScale = ContentScale.Fit
         )
-
-
-//        val iconUrl = "https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png"
-//        AsyncImage(
-//            model = iconUrl,
-//            contentDescription = null,
-//            modifier = Modifier
-//                .size(40.dp)
-//                .weight(0.5f)
-//        )
-
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.weight(1f)) {
-            Text(text = "${item.main.tempMax.roundToInt()}°", color = Color.White, fontWeight = FontWeight.Bold)
+            Text(
+                text = "${item.main.tempMax.roundToInt()}°",
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "${item.main.tempMin.roundToInt()}°", color = Color.White.copy(alpha = 0.6f))
+            Text(
+                text = "${item.main.tempMin.roundToInt()}°",
+                color = Color.White.copy(alpha = 0.6f)
+            )
         }
     }
 }
