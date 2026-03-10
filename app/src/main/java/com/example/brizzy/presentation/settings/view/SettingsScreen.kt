@@ -22,15 +22,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.brizzy.R
+import com.example.brizzy.presentation.settings.viewModel.SettingsViewModel
 import com.example.brizzy.presentation.theme.WeatherThemeState
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(viewModel: SettingsViewModel) {
 
-    var selectedTemp by remember { mutableStateOf("Celsius") }
-    var selectedWind by remember { mutableStateOf("m/s") }
-    var selectedLocation by remember { mutableStateOf("GPS") }
-    var selectedLanguage by remember { mutableStateOf("English") }
+    val selectedTemp by viewModel.tempUnit.collectAsState()
+    val selectedWind by viewModel.windUnit.collectAsState()
+    val selectedLocation by viewModel.locationMethod.collectAsState()
+    val selectedLanguage by viewModel.language.collectAsState()
 
     val bgGradient = Brush.verticalGradient(
         colors = WeatherThemeState.currentColors
@@ -70,7 +71,7 @@ fun SettingsScreen() {
                     subtitle = "Currently: $selectedTemp",
                     options = listOf("Celsius", "Fahrenheit", "Kelvin"),
                     selectedOption = selectedTemp,
-                    onOptionSelected = { selectedTemp = it }
+                    onOptionSelected = { viewModel.updateTempUnit(it) }
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -82,7 +83,7 @@ fun SettingsScreen() {
                     subtitle = "Currently: $selectedWind",
                     options = listOf("m/s", "mph"),
                     selectedOption = selectedWind,
-                    onOptionSelected = { selectedWind = it }
+                    onOptionSelected = { viewModel.updateWindUnit(it) }
                 )
             }
 
@@ -96,7 +97,7 @@ fun SettingsScreen() {
                     subtitle = "Currently: $selectedLocation",
                     options = listOf("GPS", "Map"),
                     selectedOption = selectedLocation,
-                    onOptionSelected = { selectedLocation = it }
+                    onOptionSelected = { viewModel.updateLocationMethod(it) }
                 )
             }
 
@@ -111,7 +112,7 @@ fun SettingsScreen() {
                     subtitle = "Currently: $selectedLanguage",
                     options = listOf("English", "Arabic"),
                     selectedOption = selectedLanguage,
-                    onOptionSelected = { selectedLanguage = it }
+                    onOptionSelected = { viewModel.updateLanguage(it) }
                 )
             }
 
