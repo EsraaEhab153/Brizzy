@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import com.example.brizzy.data.weather.model.City
+import com.example.brizzy.presentation.theme.WeatherThemeState
 
 
 @Composable
@@ -73,6 +74,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
         animationSpec = tween(durationMillis = 1000),
         label = "Bottom Color Animation"
     )
+    WeatherThemeState.currentColors = listOf(topColor, bottomColor)
 
     val animatedGradient = Brush.verticalGradient(listOf(topColor, bottomColor))
     Box(

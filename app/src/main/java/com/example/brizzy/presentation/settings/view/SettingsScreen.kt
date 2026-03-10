@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.brizzy.R
+import com.example.brizzy.presentation.theme.WeatherThemeState
 
 @Composable
 fun SettingsScreen() {
@@ -32,7 +33,7 @@ fun SettingsScreen() {
     var selectedLanguage by remember { mutableStateOf("English") }
 
     val bgGradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF2B70E4), Color(0xFF0F2B6B))
+        colors = WeatherThemeState.currentColors
     )
 
     Box(
