@@ -1,5 +1,9 @@
 package com.example.brizzy.presentation.home.view
 
+import android.Manifest
+import android.annotation.SuppressLint
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -45,9 +49,13 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.example.brizzy.R
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.example.brizzy.data.weather.model.City
 import com.example.brizzy.presentation.theme.WeatherThemeState
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 
 
 @Composable
@@ -57,8 +65,37 @@ fun HomeScreen(viewModel: HomeViewModel) {
     val currentTempUnit by viewModel.tempUnit.collectAsState()
     val currentWindUnit by viewModel.windUnit.collectAsState()
 
+    val context = LocalContext.current
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val isGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        if (isGranted) {
+            @SuppressLint("MissingPermission")
+            fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
+                .addOnSuccessListener { location ->
+                    if (location != null) {
+                        viewModel.getWeatherData(lat = location.latitude, lon = location.longitude)
+                    } else {
+                        viewModel.getWeatherData(lat = 35.908679, lon = 138.406112)
+                    }
+                }
+        } else {
+            viewModel.getWeatherData(lat = 30.7865, lon = 31.0004)
+        }
+    }
+
     LaunchedEffect(Unit) {
-      viewModel.getWeatherData(lat = 30.7865, lon = 31.0004)
+        permissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
     }
 
     val iconCode = if (uiState is UiState.Success) {
