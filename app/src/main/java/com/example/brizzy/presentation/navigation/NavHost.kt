@@ -36,6 +36,9 @@ fun SetupNavHost() {
 
     val showBottomBar = currentDestination?.route?.contains("Splash") == false
 
+    val context = LocalContext.current
+    val prefsManager = remember { SettingsPreferencesManager(context) }
+
     Scaffold(
         containerColor = Color.Transparent,
         bottomBar = {
@@ -60,7 +63,7 @@ fun SetupNavHost() {
             composable<ScreenRouts.Home> {
                 val remoteDataSource = WeatherRemoteDataSourceImpl()
                 val repository = WeatherRepositoryImp(remoteDataSource)
-                val factory = HomeViewModelFactory(repository)
+                val factory = HomeViewModelFactory(repository, prefsManager)
                 val homeViewModel: HomeViewModel = viewModel(factory = factory)
 
                 HomeScreen(viewModel = homeViewModel)
@@ -78,8 +81,6 @@ fun SetupNavHost() {
 
             // Settings Screen
             composable<ScreenRouts.Settings> {
-                val context = LocalContext.current
-                val prefsManager = remember { SettingsPreferencesManager(context) }
                 val factory = remember { SettingsViewModelFactory(prefsManager) }
                 val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
 

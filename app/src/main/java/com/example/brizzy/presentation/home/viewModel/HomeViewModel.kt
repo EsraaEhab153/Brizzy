@@ -9,10 +9,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModelProvider
+import com.example.brizzy.data.weather.datasource.local.dataStore.SettingsPreferencesManager
 import com.example.brizzy.data.weather.model.WeatherResponse
 import com.example.brizzy.utils.UiState
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 
-class HomeViewModel(private val repository: WeatherRepository) : ViewModel() {
+class HomeViewModel(
+    private val repository: WeatherRepository,
+    private val prefsManager: SettingsPreferencesManager
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<WeatherResponse>>(UiState.Loading)
     val uiState: StateFlow<UiState<WeatherResponse>> = _uiState.asStateFlow()
@@ -34,6 +40,17 @@ class HomeViewModel(private val repository: WeatherRepository) : ViewModel() {
             }
         }
     }
+    val tempUnit = prefsManager.tempUnitFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = "Celsius"
+    )
+
+    val windUnit = prefsManager.windUnitFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = "m/s"
+    )
 }
 
 
@@ -43,11 +60,13 @@ class HomeViewModel(private val repository: WeatherRepository) : ViewModel() {
 //    }
 //}
 
-class HomeViewModelFactory(private val repository: WeatherRepository) : ViewModelProvider.Factory {
+class HomeViewModelFactory(private val repository: WeatherRepository,
+                           private val prefsManager: SettingsPreferencesManager
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(repository) as T
+            return HomeViewModel(repository,prefsManager) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -54,8 +54,11 @@ import com.example.brizzy.presentation.theme.WeatherThemeState
 fun HomeScreen(viewModel: HomeViewModel) {
     val uiState by viewModel.uiState.collectAsState()
 
+    val currentTempUnit by viewModel.tempUnit.collectAsState()
+    val currentWindUnit by viewModel.windUnit.collectAsState()
+
     LaunchedEffect(Unit) {
-        viewModel.getWeatherData(lat = 30.7865, lon = 31.0004)
+      viewModel.getWeatherData(lat = 30.7865, lon = 31.0004)
     }
 
     val iconCode = if (uiState is UiState.Success) {
@@ -174,7 +177,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
                     )
 
                     Text(
-                        text = "${currentWeather.main.temp.roundToInt()}°",
+                        text = formatTemperature(currentWeather.main.temp, currentTempUnit),
                         color = Color.White,
                         fontSize = 80.sp,
                         fontWeight = FontWeight.ExtraBold
@@ -188,23 +191,23 @@ fun HomeScreen(viewModel: HomeViewModel) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        WeatherChip("↑ ${dailyList[0].main.tempMax.roundToInt()}°")
-                        WeatherChip("↓ ${dailyList[0].main.tempMin.roundToInt()}°")
-                        WeatherChip("Feels ${currentWeather.main.feelsLike.roundToInt()}°")
+                        WeatherChip("↑ ${formatTemperature(dailyList[0].main.tempMax, currentTempUnit)}")
+                        WeatherChip("↓ ${formatTemperature(dailyList[0].main.tempMin, currentTempUnit)}")
+                        WeatherChip("Feels ${formatTemperature(currentWeather.main.feelsLike, currentTempUnit)}")
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    WeatherDetailsGrid(currentWeather = currentWeather, city = weatherData.city)
+                    WeatherDetailsGrid(currentWeather = currentWeather, city = weatherData.city,currentTempUnit=currentTempUnit,currentWindUnit=currentWindUnit)
 
                     Spacer(modifier = Modifier.height(32.dp))
 
                     val hourlyList = weatherData.list.take(8)
-                    HourlyForecastSection(hourlyList)
+                    HourlyForecastSection(hourlyList,currentTempUnit)
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    DailyForecastSection(dailyList)
+                    DailyForecastSection(dailyList,currentTempUnit)
 
                     Spacer(modifier = Modifier.height(60.dp))
                 }
@@ -229,7 +232,7 @@ fun WeatherChip(text: String) {
 }
 
 @Composable
-fun WeatherDetailsGrid(currentWeather: ForecastItem,city: City) {
+fun WeatherDetailsGrid(currentWeather: ForecastItem,city: City,currentTempUnit:String,currentWindUnit:String) {
     val sunriseTime = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(city.sunrise * 1000))
     val sunsetTime = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(city.sunset * 1000))
 
@@ -252,7 +255,7 @@ fun WeatherDetailsGrid(currentWeather: ForecastItem,city: City) {
                 WeatherDetailChip(
                     iconRes = R.drawable.windy,
                     title = "Wind",
-                    value = "${currentWeather.wind.speed.roundToInt()} km/h",
+                    value = formatWindSpeed(currentWeather.wind.speed, currentWindUnit),
                     modifier = Modifier.weight(1f)
                 )
                 WeatherDetailChip(
@@ -284,7 +287,7 @@ fun WeatherDetailsGrid(currentWeather: ForecastItem,city: City) {
                 WeatherDetailChip(
                     iconRes = R.drawable.thermostat,
                     title = "Feels Like",
-                    value = "${currentWeather.main.feelsLike.roundToInt()}°C",
+                    value = formatTemperature(currentWeather.main.feelsLike, currentTempUnit),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -352,7 +355,7 @@ fun DetailItem(title: String, value: String) {
 }
 
 @Composable
-fun HourlyForecastSection(hourlyList: List<ForecastItem>) {
+fun HourlyForecastSection(hourlyList: List<ForecastItem>,currentTempUnit:String) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Hourly Forecast",
@@ -364,14 +367,14 @@ fun HourlyForecastSection(hourlyList: List<ForecastItem>) {
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(hourlyList) { item ->
-                HourlyItem(item)
+                HourlyItem(item,currentTempUnit)
             }
         }
     }
 }
 
 @Composable
-fun HourlyItem(item: ForecastItem) {
+fun HourlyItem(item: ForecastItem,currentTempUnit:String) {
     Surface(
         color = Color.White.copy(alpha = 0.15f),
         shape = RoundedCornerShape(24.dp),
@@ -401,7 +404,7 @@ fun HourlyItem(item: ForecastItem) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "${item.main.temp.roundToInt()}°",
+                text = formatTemperature(item.main.temp,currentTempUnit),
                 color = Color.White,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -411,7 +414,7 @@ fun HourlyItem(item: ForecastItem) {
 }
 
 @Composable
-fun DailyForecastSection(dailyList: List<ForecastItem>) {
+fun DailyForecastSection(dailyList: List<ForecastItem>,currentTempUnit:String) {
     Column(modifier = Modifier.padding(0.dp)) {
         Text(
             text = "5-Day Forecast",
@@ -428,7 +431,7 @@ fun DailyForecastSection(dailyList: List<ForecastItem>) {
             Column(modifier = Modifier.padding(20.dp)) {
 
                 dailyList.forEach { item ->
-                    DailyItem(item)
+                    DailyItem(item,currentTempUnit)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
@@ -437,7 +440,7 @@ fun DailyForecastSection(dailyList: List<ForecastItem>) {
 }
 
 @Composable
-fun DailyItem(item: ForecastItem) {
+fun DailyItem(item: ForecastItem,currentTempUnit:String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -463,13 +466,13 @@ fun DailyItem(item: ForecastItem) {
         )
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.weight(1f)) {
             Text(
-                text = "${item.main.tempMax.roundToInt()}°",
+                text = formatTemperature(item.main.tempMax,currentTempUnit),
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "${item.main.tempMin.roundToInt()}°",
+                text = formatTemperature(item.main.tempMin,currentTempUnit),
                 color = Color.White.copy(alpha = 0.6f)
             )
         }
@@ -522,5 +525,21 @@ fun getWeatherBackgroundColors(iconCode: String?): List<Color> {
         "13d", "13n" -> listOf(Color(0xFF6A93CB), Color(0xFFA4BFE3))
 
         else -> listOf(Color(0xFF2B70E4), Color(0xFF0F2B6B))
+    }
+}
+
+
+fun formatTemperature(tempInCelsius: Double, unit: String): String {
+    return when (unit) {
+        "Fahrenheit" -> "${((tempInCelsius * 9 / 5) + 32).roundToInt()}°f"
+        "Kelvin" -> "${(tempInCelsius + 273.15).roundToInt()}K"
+        else -> "${tempInCelsius.roundToInt()}°c"
+    }
+}
+
+fun formatWindSpeed(speedInMs: Double, unit: String): String {
+    return when (unit) {
+        "mph" -> "${(speedInMs * 2.23694).roundToInt()} mph"
+        else -> "${speedInMs.roundToInt()} m/s"
     }
 }
