@@ -4,14 +4,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.brizzy.data.weather.WeatherRepositoryImp
+import com.example.brizzy.data.weather.datasource.local.dataStore.SettingsPreferencesManager
 import com.example.brizzy.data.weather.datasource.remote.WeatherRemoteDataSourceImpl
 import com.example.brizzy.presentation.alerts.view.AlertsScreen
 import com.example.brizzy.presentation.favorite.view.FavoritesScreen
@@ -19,6 +22,8 @@ import com.example.brizzy.presentation.home.view.HomeScreen
 import com.example.brizzy.presentation.home.viewModel.HomeViewModel
 import com.example.brizzy.presentation.home.viewModel.HomeViewModelFactory
 import com.example.brizzy.presentation.settings.view.SettingsScreen
+import com.example.brizzy.presentation.settings.viewModel.SettingsViewModel
+import com.example.brizzy.presentation.settings.viewModel.SettingsViewModelFactory
 import com.example.brizzy.presentation.splash.view.SplashScreen
 
 
@@ -30,6 +35,9 @@ fun SetupNavHost() {
     val currentDestination = navBackStackEntry?.destination
 
     val showBottomBar = currentDestination?.route?.contains("Splash") == false
+
+    val context = LocalContext.current
+    val prefsManager = remember { SettingsPreferencesManager(context) }
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -55,7 +63,7 @@ fun SetupNavHost() {
             composable<ScreenRouts.Home> {
                 val remoteDataSource = WeatherRemoteDataSourceImpl()
                 val repository = WeatherRepositoryImp(remoteDataSource)
-                val factory = HomeViewModelFactory(repository)
+                val factory = HomeViewModelFactory(repository, prefsManager)
                 val homeViewModel: HomeViewModel = viewModel(factory = factory)
 
                 HomeScreen(viewModel = homeViewModel)
@@ -73,7 +81,10 @@ fun SetupNavHost() {
 
             // Settings Screen
             composable<ScreenRouts.Settings> {
-                SettingsScreen()
+                val factory = remember { SettingsViewModelFactory(prefsManager) }
+                val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
+
+                SettingsScreen(viewModel = settingsViewModel)
             }
         }
     }
