@@ -20,6 +20,7 @@ import com.example.brizzy.presentation.favorite.view.FavoritesScreen
 import com.example.brizzy.presentation.home.view.HomeScreen
 import com.example.brizzy.presentation.home.viewModel.HomeViewModel
 import com.example.brizzy.presentation.home.viewModel.HomeViewModelFactory
+import com.example.brizzy.presentation.map.view.MapScreen
 import com.example.brizzy.presentation.settings.view.SettingsScreen
 import com.example.brizzy.presentation.settings.viewModel.SettingsViewModel
 import com.example.brizzy.presentation.settings.viewModel.SettingsViewModelFactory
@@ -83,7 +84,21 @@ fun SetupNavHost() {
                 val factory = remember { SettingsViewModelFactory(prefsManager) }
                 val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
 
-                SettingsScreen(viewModel = settingsViewModel)
+                SettingsScreen(viewModel = settingsViewModel,navController=navController)
+            }
+
+            // Map Screen
+            composable<ScreenRouts.MapSelection> {
+                val factory = remember { SettingsViewModelFactory(prefsManager) }
+                val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
+
+                MapScreen(
+                    onLocationSelected = { lat, lon ->
+                        settingsViewModel.updateMapLocation(lat, lon)
+                        settingsViewModel.updateLocationMethod("Map")
+                        navController.popBackStack()
+                    }
+                )
             }
         }
     }

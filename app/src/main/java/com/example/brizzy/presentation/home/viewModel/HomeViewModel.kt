@@ -51,6 +51,18 @@ class HomeViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = "m/s"
     )
+
+    val latitude = prefsManager.mapLatFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 30.0444
+    )
+
+    val longitude = prefsManager.mapLonFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 31.2357
+    )
 }
 
 

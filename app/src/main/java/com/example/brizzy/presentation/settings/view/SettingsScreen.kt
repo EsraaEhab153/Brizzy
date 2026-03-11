@@ -21,12 +21,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.brizzy.R
+import com.example.brizzy.presentation.navigation.ScreenRouts
 import com.example.brizzy.presentation.settings.viewModel.SettingsViewModel
 import com.example.brizzy.presentation.theme.WeatherThemeState
 
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel) {
+fun SettingsScreen(viewModel: SettingsViewModel,navController: NavController) {
 
     val selectedTemp by viewModel.tempUnit.collectAsState()
     val selectedWind by viewModel.windUnit.collectAsState()
@@ -97,7 +99,13 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                     subtitle = "Currently: $selectedLocation",
                     options = listOf("GPS", "Map"),
                     selectedOption = selectedLocation,
-                    onOptionSelected = { viewModel.updateLocationMethod(it) }
+                    onOptionSelected = { option ->
+                        if (option == "Map") {
+                            navController.navigate(ScreenRouts.MapSelection)
+                        } else {
+                            viewModel.updateLocationMethod(option)
+                        }
+                    }
                 )
             }
 
