@@ -1,5 +1,6 @@
 package com.example.brizzy.presentation.map.view
 
+import android.R
 import android.preference.PreferenceManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,7 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.brizzy.presentation.map.viewModel.MapViewModel
@@ -81,15 +84,18 @@ fun MapScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChanged(it) },
-                placeholder = { Text("Search for a city...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                placeholder = { Text("Search for a city...", color = Color.White, textAlign = TextAlign.Start) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.White) },
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White.copy(alpha = 0.9f),
-                    unfocusedContainerColor = Color.White.copy(alpha = 0.9f),
+                    focusedContainerColor = Color(0xFF0F2B6B),
+                    unfocusedContainerColor = Color(0xFF0F2B6B),
                     focusedIndicatorColor = Color(0xFF29B2DD),
-                    unfocusedIndicatorColor = Color.Transparent
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = Color(0xFF29B2DD),
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White
                 ),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(30.dp),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
@@ -102,7 +108,7 @@ fun MapScreen(
                         .padding(top = 8.dp),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0F2B6B))
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         searchResults.forEach { city ->
@@ -125,7 +131,7 @@ fun MapScreen(
                                         mapView?.invalidate()
                                     }
                                     .padding(16.dp),
-                                color = Color.Black
+                                color = Color.White
                             )
                             Divider(color = Color.LightGray.copy(alpha = 0.5f))
                         }
