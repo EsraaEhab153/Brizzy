@@ -12,9 +12,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.brizzy.data.db.WeatherDatabase
 import com.example.brizzy.data.network.RetrofitClient
 import com.example.brizzy.data.weather.WeatherRepositoryImp
 import com.example.brizzy.data.weather.datasource.local.dataStore.SettingsPreferencesManager
+import com.example.brizzy.data.weather.datasource.local.room.WeatherLocalDataSource
 import com.example.brizzy.data.weather.datasource.remote.WeatherRemoteDataSourceImpl
 import com.example.brizzy.presentation.alerts.view.AlertsScreen
 import com.example.brizzy.presentation.favorite.view.FavoritesScreen
@@ -64,8 +66,15 @@ fun SetupNavHost() {
 
             // Home Screen
             composable<ScreenRouts.Home> {
+                val context = LocalContext.current
+                val database = WeatherDatabase.getDatabase(context)
+                val localDataSource = WeatherLocalDataSource(database.favoriteLocationDao())
                 val remoteDataSource = WeatherRemoteDataSourceImpl()
-                val repository = WeatherRepositoryImp(remoteDataSource)
+
+                val repository = WeatherRepositoryImp(
+                    remoteDataSource = remoteDataSource,
+                    localDataSource = localDataSource
+                )
                 val factory = HomeViewModelFactory(repository, prefsManager)
                 val homeViewModel: HomeViewModel = viewModel(factory = factory)
 
@@ -96,8 +105,11 @@ fun SetupNavHost() {
                 val settingsViewModel: SettingsViewModel = viewModel(factory = settingsFactory)
 
                 val repository = remember {
+                    val database = WeatherDatabase.getDatabase(context)
+                    val favoriteDao = database.favoriteLocationDao()
                     WeatherRepositoryImp(
-                        remoteDataSource = WeatherRemoteDataSourceImpl()
+                        remoteDataSource = WeatherRemoteDataSourceImpl(),
+                        localDataSource = WeatherLocalDataSource(favoriteDao)
                     )
                 }
                 val mapFactory = remember { MapViewModelFactory(repository) }

@@ -1,6 +1,8 @@
 package com.example.brizzy.data.weather
 
+import com.example.brizzy.data.weather.datasource.local.room.WeatherLocalDataSource
 import com.example.brizzy.data.weather.datasource.remote.WeatherRemoteDataSource
+import com.example.brizzy.data.weather.model.FavoriteLocationEntity
 import com.example.brizzy.data.weather.model.GeocodingResponseItem
 import com.example.brizzy.data.weather.model.WeatherResponse
 import com.example.brizzy.utils.Constants
@@ -8,7 +10,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class WeatherRepositoryImp(
-    private val remoteDataSource: WeatherRemoteDataSource
+    private val remoteDataSource: WeatherRemoteDataSource,
+    private val localDataSource: WeatherLocalDataSource
 ) : WeatherRepository {
 
     override suspend fun getWeather(lat: Double, lon: Double): Flow<WeatherResponse> {
@@ -40,5 +43,17 @@ class WeatherRepositoryImp(
         } catch (e: Exception) {
             emit(emptyList())
         }
+    }
+
+    override fun getAllFavoriteLocations(): Flow<List<FavoriteLocationEntity>> {
+        return localDataSource.getAllFavoriteLocations()
+    }
+
+    override suspend fun insertFavoriteLocation(location: FavoriteLocationEntity) {
+        localDataSource.insertFavoriteLocation(location)
+    }
+
+    override suspend fun deleteFavoriteLocation(location: FavoriteLocationEntity) {
+        localDataSource.deleteFavoriteLocation(location)
     }
 }
