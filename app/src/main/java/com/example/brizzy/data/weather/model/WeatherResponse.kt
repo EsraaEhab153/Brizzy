@@ -1,6 +1,7 @@
 package com.example.brizzy.data.weather.model
 
 import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Serializable
 
 data class WeatherResponse(
     val list: List<ForecastItem>,
