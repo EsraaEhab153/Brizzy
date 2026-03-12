@@ -1,5 +1,6 @@
 package com.example.brizzy.presentation.favorite.viewModel
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -20,10 +21,30 @@ class FavoritesViewModel(private val repository: WeatherRepository) : ViewModel(
                 initialValue = emptyList()
             )
 
-    fun deleteLocation(location: FavoriteLocationEntity) {
-        viewModelScope.launch {
-            repository.deleteFavoriteLocation(location)
+    var locationToDelete = mutableStateOf<FavoriteLocationEntity?>(null)
+    var showConfirmDialog = mutableStateOf(false)
+
+    fun requestDelete(location: FavoriteLocationEntity) {
+        locationToDelete.value = location
+        showConfirmDialog.value = true
+    }
+
+    fun confirmDelete() {
+        locationToDelete.value?.let { location ->
+            viewModelScope.launch {
+                repository.deleteFavoriteLocation(location)
+            }
         }
+        resetDeleteState()
+    }
+
+    fun cancelDelete() {
+        resetDeleteState()
+    }
+
+    private fun resetDeleteState() {
+        showConfirmDialog.value = false
+        locationToDelete.value = null
     }
 }
 
