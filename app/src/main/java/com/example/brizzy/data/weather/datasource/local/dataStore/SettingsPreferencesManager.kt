@@ -1,6 +1,7 @@
 package com.example.brizzy.data.weather.datasource.local.dataStore
 
 import android.content.Context
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -16,6 +17,8 @@ class SettingsPreferencesManager(private val context: Context) {
         val WIND_UNIT_KEY = stringPreferencesKey("wind_unit")
         val LOCATION_METHOD_KEY = stringPreferencesKey("location_method")
         val LANGUAGE_KEY = stringPreferencesKey("language")
+        val MAP_LAT_KEY = doublePreferencesKey("map_lat")
+        val MAP_LON_KEY = doublePreferencesKey("map_lon")
     }
 
     val tempUnitFlow: Flow<String> = context.dataStore.data.map { preferences ->
@@ -34,6 +37,9 @@ class SettingsPreferencesManager(private val context: Context) {
         preferences[LANGUAGE_KEY] ?: "English"
     }
 
+    val mapLatFlow: Flow<Double> = context.dataStore.data.map { it[MAP_LAT_KEY] ?: 30.0444 }
+    val mapLonFlow: Flow<Double> = context.dataStore.data.map { it[MAP_LON_KEY] ?: 31.2357 }
+
     suspend fun saveTempUnit(unit: String) {
         context.dataStore.edit { preferences -> preferences[TEMP_UNIT_KEY] = unit }
     }
@@ -48,5 +54,11 @@ class SettingsPreferencesManager(private val context: Context) {
 
     suspend fun saveLanguage(language: String) {
         context.dataStore.edit { preferences -> preferences[LANGUAGE_KEY] = language }
+    }
+    suspend fun saveMapLocation(lat: Double, lon: Double) {
+        context.dataStore.edit { preferences ->
+            preferences[MAP_LAT_KEY] = lat
+            preferences[MAP_LON_KEY] = lon
+        }
     }
 }

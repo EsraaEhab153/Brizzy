@@ -1,11 +1,10 @@
 package com.example.brizzy.presentation.navigation
 
-import androidx.compose.foundation.layout.padding
+
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -13,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.brizzy.data.network.RetrofitClient
 import com.example.brizzy.data.weather.WeatherRepositoryImp
 import com.example.brizzy.data.weather.datasource.local.dataStore.SettingsPreferencesManager
 import com.example.brizzy.data.weather.datasource.remote.WeatherRemoteDataSourceImpl
@@ -21,6 +21,9 @@ import com.example.brizzy.presentation.favorite.view.FavoritesScreen
 import com.example.brizzy.presentation.home.view.HomeScreen
 import com.example.brizzy.presentation.home.viewModel.HomeViewModel
 import com.example.brizzy.presentation.home.viewModel.HomeViewModelFactory
+import com.example.brizzy.presentation.map.view.MapScreen
+import com.example.brizzy.presentation.map.viewModel.MapViewModel
+import com.example.brizzy.presentation.map.viewModel.MapViewModelFactory
 import com.example.brizzy.presentation.settings.view.SettingsScreen
 import com.example.brizzy.presentation.settings.viewModel.SettingsViewModel
 import com.example.brizzy.presentation.settings.viewModel.SettingsViewModelFactory
@@ -84,7 +87,30 @@ fun SetupNavHost() {
                 val factory = remember { SettingsViewModelFactory(prefsManager) }
                 val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
 
-                SettingsScreen(viewModel = settingsViewModel)
+                SettingsScreen(viewModel = settingsViewModel, navController = navController)
+            }
+
+            // Map Screen
+            composable<ScreenRouts.MapSelection> {
+                val settingsFactory = remember { SettingsViewModelFactory(prefsManager) }
+                val settingsViewModel: SettingsViewModel = viewModel(factory = settingsFactory)
+
+                val repository = remember {
+                    WeatherRepositoryImp(
+                        remoteDataSource = WeatherRemoteDataSourceImpl()
+                    )
+                }
+                val mapFactory = remember { MapViewModelFactory(repository) }
+                val mapViewModel: MapViewModel = viewModel(factory = mapFactory)
+
+                MapScreen(
+                    viewModel = mapViewModel,
+                    onLocationSelected = { lat, lon ->
+                        settingsViewModel.updateMapLocation(lat, lon)
+                        settingsViewModel.updateLocationMethod("Map")
+                        navController.popBackStack()
+                    }
+                )
             }
         }
     }

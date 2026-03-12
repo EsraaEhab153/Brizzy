@@ -65,6 +65,10 @@ fun HomeScreen(viewModel: HomeViewModel) {
     val currentTempUnit by viewModel.tempUnit.collectAsState()
     val currentWindUnit by viewModel.windUnit.collectAsState()
 
+    val locationMethod by viewModel.locationMethod.collectAsState()
+    val mapLat by viewModel.latitude.collectAsState()
+    val mapLon by viewModel.longitude.collectAsState()
+
     val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
@@ -81,21 +85,25 @@ fun HomeScreen(viewModel: HomeViewModel) {
                     if (location != null) {
                         viewModel.getWeatherData(lat = location.latitude, lon = location.longitude)
                     } else {
-                        viewModel.getWeatherData(lat = 35.908679, lon = 138.406112)
+                        viewModel.getWeatherData(lat = 30.0444, lon = 31.2357)
                     }
                 }
         } else {
-            viewModel.getWeatherData(lat = 30.7865, lon = 31.0004)
+            viewModel.getWeatherData(lat = 30.0444, lon = 31.2357)
         }
     }
 
     LaunchedEffect(Unit) {
-        permissionLauncher.launch(
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+        if (locationMethod == "Map") {
+            viewModel.getWeatherData(lat = mapLat, lon = mapLon)
+        } else {
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
             )
-        )
+        }
     }
 
     val iconCode = if (uiState is UiState.Success) {

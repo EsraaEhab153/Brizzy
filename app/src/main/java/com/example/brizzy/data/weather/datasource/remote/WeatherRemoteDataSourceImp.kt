@@ -1,12 +1,14 @@
 package com.example.brizzy.data.weather.datasource.remote
 
 import com.example.brizzy.data.network.RetrofitClient
+import com.example.brizzy.data.weather.model.GeocodingResponseItem
 import com.example.brizzy.data.weather.model.WeatherResponse
 import com.example.brizzy.utils.Constants
 import retrofit2.Response
 
 interface WeatherRemoteDataSource {
     suspend fun getWeatherOverNetwork(lat: Double, lon: Double): Response<WeatherResponse>
+    suspend fun searchCity(cityName: String, apiKey: String): Response<List<GeocodingResponseItem>>
 }
 
 class WeatherRemoteDataSourceImpl : WeatherRemoteDataSource {
@@ -22,6 +24,10 @@ class WeatherRemoteDataSourceImpl : WeatherRemoteDataSource {
             units = "metric",
             lang = "en"
         )
+    }
+
+    override suspend fun searchCity(cityName: String, apiKey: String): Response<List<GeocodingResponseItem>> {
+        return weatherService.searchCity(cityName = cityName, apiKey = apiKey)
     }
 }
 

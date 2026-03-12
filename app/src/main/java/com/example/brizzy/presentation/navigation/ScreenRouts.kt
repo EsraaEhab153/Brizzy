@@ -19,4 +19,6 @@ sealed class ScreenRouts {
     @Serializable
     data object Settings : ScreenRouts()
 
+    @Serializable
+    data object MapSelection : ScreenRouts()
 }

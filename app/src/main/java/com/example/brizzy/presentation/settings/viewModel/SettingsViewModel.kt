@@ -29,10 +29,25 @@ class SettingsViewModel(private val prefsManager: SettingsPreferencesManager) : 
         viewModelScope, SharingStarted.WhileSubscribed(5000), "English"
     )
 
+    val latitude = prefsManager.mapLatFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 30.0444
+    )
+
+    val longitude = prefsManager.mapLonFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 31.2357
+    )
+
     fun updateTempUnit(unit: String) = viewModelScope.launch { prefsManager.saveTempUnit(unit) }
     fun updateWindUnit(unit: String) = viewModelScope.launch { prefsManager.saveWindUnit(unit) }
     fun updateLocationMethod(method: String) = viewModelScope.launch { prefsManager.saveLocationMethod(method) }
     fun updateLanguage(lang: String) = viewModelScope.launch { prefsManager.saveLanguage(lang) }
+    fun updateMapLocation(lat: Double, lon: Double) = viewModelScope.launch {
+        prefsManager.saveMapLocation(lat, lon)
+    }
 }
 
 class SettingsViewModelFactory(private val prefsManager: SettingsPreferencesManager) : ViewModelProvider.Factory {
