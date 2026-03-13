@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import com.example.brizzy.presentation.favorite.viewModel.FavoritesViewModel
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,7 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.brizzy.R
 import com.example.brizzy.data.weather.model.FavoriteLocationEntity
 import com.example.brizzy.data.weather.model.WeatherResponse
 
@@ -45,23 +48,52 @@ fun FavoritesScreen(
             FavoritesHeader(
                 onAddLocationClick = onAddLocationClick
             )
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                contentPadding = PaddingValues(bottom = 100.dp)
-            ) {
-                items(
-                    items = favoriteLocations,
-                    key = { location -> location.id }
-                ) { location ->
-                    val weather = weatherMap[location.id]
-                    SwipeToDeleteBox(
-                        location = location,
-                        weather = weather,
-                        onDeleteInitiated = { viewModel.requestDelete(location) },
-                        onClick = { onLocationClick(location.latitude, location.longitude) }
-                    )
+            if(favoriteLocations.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                       Image(
+                           painter = painterResource(id = R.drawable.no_favorites),
+                           contentDescription = "no favorite places",
+                       )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "No favorite locations yet.",
+                            color = Color.White.copy(alpha = 0.6f),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = "Click '+' to add some!",
+                            color = Color.White.copy(alpha = 0.4f),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
+            else{
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                    contentPadding = PaddingValues(bottom = 100.dp)
+                ) {
+                    items(
+                        items = favoriteLocations,
+                        key = { location -> location.id }
+                    ) { location ->
+                        val weather = weatherMap[location.id]
+                        SwipeToDeleteBox(
+                            location = location,
+                            weather = weather,
+                            onDeleteInitiated = { viewModel.requestDelete(location) },
+                            onClick = { onLocationClick(location.latitude, location.longitude) }
+                        )
+                    }
+                }
+            }
+
         }
 
         DeleteConfirmationDialog(
@@ -90,7 +122,7 @@ fun FavoritesHeader(
         }
         FloatingActionButton(
             onClick = onAddLocationClick,
-            containerColor = Color(0xFF29B2DD),
+            containerColor = Color(0x6829B2DD),
             contentColor = Color.White,
             shape = CircleShape,
             modifier = Modifier.size(48.dp)
@@ -130,7 +162,7 @@ fun LocationCard(
 @Composable
 fun SwipeToDeleteBox(
     location: FavoriteLocationEntity,
-    weather: com.example.brizzy.data.weather.model.WeatherResponse?,
+    weather: WeatherResponse?,
     onDeleteInitiated: () -> Unit,
     onClick: () -> Unit
 ) {
