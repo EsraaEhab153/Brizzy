@@ -21,4 +21,9 @@ sealed class ScreenRouts {
 
     @Serializable
     data object MapSelection : ScreenRouts()
+
+    @Serializable
+    data object MapAddFavorite : ScreenRouts()
+
+
 }

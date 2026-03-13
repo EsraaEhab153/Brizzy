@@ -1,10 +1,10 @@
 package com.example.brizzy.presentation.navigation
 
-
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -18,8 +18,11 @@ import com.example.brizzy.data.weather.WeatherRepositoryImp
 import com.example.brizzy.data.weather.datasource.local.dataStore.SettingsPreferencesManager
 import com.example.brizzy.data.weather.datasource.local.room.WeatherLocalDataSource
 import com.example.brizzy.data.weather.datasource.remote.WeatherRemoteDataSourceImpl
+import com.example.brizzy.data.weather.model.FavoriteLocationEntity
 import com.example.brizzy.presentation.alerts.view.AlertsScreen
 import com.example.brizzy.presentation.favorite.view.FavoritesScreen
+import com.example.brizzy.presentation.favorite.viewModel.FavoritesViewModel
+import com.example.brizzy.presentation.favorite.viewModel.FavoritesViewModelFactory
 import com.example.brizzy.presentation.home.view.HomeScreen
 import com.example.brizzy.presentation.home.viewModel.HomeViewModel
 import com.example.brizzy.presentation.home.viewModel.HomeViewModelFactory
@@ -30,7 +33,7 @@ import com.example.brizzy.presentation.settings.view.SettingsScreen
 import com.example.brizzy.presentation.settings.viewModel.SettingsViewModel
 import com.example.brizzy.presentation.settings.viewModel.SettingsViewModelFactory
 import com.example.brizzy.presentation.splash.view.SplashScreen
-
+import kotlinx.coroutines.launch
 
 @Composable
 fun SetupNavHost() {
@@ -81,9 +84,24 @@ fun SetupNavHost() {
                 HomeScreen(viewModel = homeViewModel)
             }
 
-            // Favorite Screen
+            // Favorites Screen
             composable<ScreenRouts.Favorite> {
-                FavoritesScreen()
+                val context = LocalContext.current
+                val database = WeatherDatabase.getDatabase(context)
+                val repository = remember {
+                    WeatherRepositoryImp(
+                        remoteDataSource = WeatherRemoteDataSourceImpl(),
+                        localDataSource = WeatherLocalDataSource(database.favoriteLocationDao())
+                    )
+                }
+
+                val favoritesFactory = remember { FavoritesViewModelFactory(repository) }
+                val favoritesViewModel: FavoritesViewModel = viewModel(factory = favoritesFactory)
+
+                FavoritesScreen(viewModel = favoritesViewModel,
+                    onAddLocationClick = {
+                        navController.navigate(ScreenRouts.MapAddFavorite)
+                    })
             }
 
             // Alerts Screen
@@ -117,10 +135,40 @@ fun SetupNavHost() {
 
                 MapScreen(
                     viewModel = mapViewModel,
-                    onLocationSelected = { lat, lon ->
+                    onLocationSelected = { cityName,lat, lon ->
                         settingsViewModel.updateMapLocation(lat, lon)
                         settingsViewModel.updateLocationMethod("Map")
                         navController.popBackStack()
+                    }
+                )
+            }
+
+            composable<ScreenRouts.MapAddFavorite> {
+                val context = LocalContext.current
+                val scope = rememberCoroutineScope()
+                val database = WeatherDatabase.getDatabase(context)
+                val repository = remember {
+                    WeatherRepositoryImp(
+                        remoteDataSource = WeatherRemoteDataSourceImpl(),
+                        localDataSource = WeatherLocalDataSource(database.favoriteLocationDao())
+                    )
+                }
+                val mapFactory = remember { MapViewModelFactory(repository) }
+                val mapViewModel: MapViewModel = viewModel(factory = mapFactory)
+
+                MapScreen(
+                    viewModel = mapViewModel,
+                    onLocationSelected = { cityName, lat, lon ->
+                        val newFavorite = FavoriteLocationEntity(
+                            cityName = cityName,
+                            latitude = lat,
+                            longitude = lon
+                        )
+
+                        scope.launch {
+                            repository.insertFavoriteLocation(newFavorite)
+                            navController.popBackStack()
+                        }
                     }
                 )
             }

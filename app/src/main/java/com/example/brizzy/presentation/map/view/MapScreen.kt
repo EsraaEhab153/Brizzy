@@ -31,7 +31,7 @@ import org.osmdroid.views.overlay.Marker
 @Composable
 fun MapScreen(
     viewModel: MapViewModel,
-    onLocationSelected: (lat: Double, lon: Double) -> Unit
+    onLocationSelected: (cityName: String,lat: Double, lon: Double) -> Unit
 ) {
     val context = LocalContext.current
     var selectedPoint by remember { mutableStateOf<GeoPoint?>(null) }
@@ -142,7 +142,10 @@ fun MapScreen(
 
         if (selectedPoint != null) {
             Button(
-                onClick = { onLocationSelected(selectedPoint!!.latitude, selectedPoint!!.longitude) },
+                onClick = {
+                    val finalCityName = if (searchQuery.isNotBlank()) searchQuery else "Pinned Location"
+                    onLocationSelected(finalCityName, selectedPoint!!.latitude, selectedPoint!!.longitude)
+                          },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF29B2DD)),
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
