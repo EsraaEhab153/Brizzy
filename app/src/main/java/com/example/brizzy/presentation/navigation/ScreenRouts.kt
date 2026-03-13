@@ -25,5 +25,7 @@ sealed class ScreenRouts {
     @Serializable
     data object MapAddFavorite : ScreenRouts()
 
+    @Serializable
+    data class FavoriteDetails(val lat: Double, val lon: Double)
 
 }

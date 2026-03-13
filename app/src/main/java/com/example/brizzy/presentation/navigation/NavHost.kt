@@ -2,6 +2,7 @@ package com.example.brizzy.presentation.navigation
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -12,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.example.brizzy.data.db.WeatherDatabase
 import com.example.brizzy.data.network.RetrofitClient
 import com.example.brizzy.data.weather.WeatherRepositoryImp
@@ -101,7 +103,11 @@ fun SetupNavHost() {
                 FavoritesScreen(viewModel = favoritesViewModel,
                     onAddLocationClick = {
                         navController.navigate(ScreenRouts.MapAddFavorite)
-                    })
+                    },
+                    onLocationClick = { lat, lon ->
+                        navController.navigate(ScreenRouts.FavoriteDetails(lat = lat, lon = lon))
+                    }
+                )
             }
 
             // Alerts Screen
@@ -171,6 +177,31 @@ fun SetupNavHost() {
                         }
                     }
                 )
+            }
+
+            composable<ScreenRouts.FavoriteDetails> { backStackEntry ->
+                val details = backStackEntry.toRoute<ScreenRouts.FavoriteDetails>()
+
+                val remoteDataSource = WeatherRemoteDataSourceImpl()
+                val context = LocalContext.current
+                val localDataSource = WeatherLocalDataSource(WeatherDatabase.getDatabase(context).favoriteLocationDao())
+                val repository = WeatherRepositoryImp(remoteDataSource, localDataSource)
+
+                val factory = HomeViewModelFactory(
+                    repository = repository,
+                    prefsManager = prefsManager,
+                    isFavoriteMode = true
+                )
+                val detailsViewModel: HomeViewModel = viewModel(factory = factory)
+
+                 LaunchedEffect(details) {
+                     detailsViewModel.getWeatherData(
+                         lat = details.lat,
+                         lon = details.lon,
+                     )
+                }
+
+                HomeScreen(viewModel = detailsViewModel)
             }
         }
     }

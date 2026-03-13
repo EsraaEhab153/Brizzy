@@ -8,6 +8,7 @@ import com.example.brizzy.presentation.favorite.viewModel.FavoritesViewModel
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,16 +25,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.brizzy.data.weather.model.FavoriteLocationEntity
+import com.example.brizzy.data.weather.model.WeatherResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
     viewModel: FavoritesViewModel,
-    onAddLocationClick: () -> Unit
+    onAddLocationClick: () -> Unit,
+    onLocationClick: (lat: Double, lon: Double) -> Unit
 ) {
     val favoriteLocations by viewModel.favoriteLocations.collectAsState()
     val showConfirmDialog by viewModel.showConfirmDialog
     val locationToDelete by viewModel.locationToDelete
+    val weatherMap by viewModel.weatherDataMap.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFF0F1B3C))) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -49,9 +53,12 @@ fun FavoritesScreen(
                     items = favoriteLocations,
                     key = { location -> location.id }
                 ) { location ->
+                    val weather = weatherMap[location.id]
                     SwipeToDeleteBox(
                         location = location,
-                        onDeleteInitiated = { viewModel.requestDelete(location) }
+                        weather = weather,
+                        onDeleteInitiated = { viewModel.requestDelete(location) },
+                        onClick = { onLocationClick(location.latitude, location.longitude) }
                     )
                 }
             }
@@ -93,9 +100,13 @@ fun FavoritesHeader(
     }
 }
 @Composable
-fun LocationCard(location: FavoriteLocationEntity) {
+fun LocationCard(
+    location: FavoriteLocationEntity,
+    weather: WeatherResponse?,
+    onClick: () -> Unit
+) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp).height(100.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp).height(100.dp).clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.05f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
@@ -103,7 +114,14 @@ fun LocationCard(location: FavoriteLocationEntity) {
     ) {
         Row(modifier = Modifier.fillMaxSize().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(location.cityName, color = Color.White, modifier = Modifier.weight(1f))
-            Text("24°", color = Color.White, style = MaterialTheme.typography.headlineLarge)
+            if (weather != null) {
+                val temp = weather.list?.get(0)?.main?.temp?.toInt() ?: 0
+                val iconString = weather.list?.get(0)?.weather?.get(0)?.icon
+
+                Text("$temp°", color = Color.White, style = MaterialTheme.typography.headlineLarge)
+            } else {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            }
         }
     }
 }
@@ -112,7 +130,9 @@ fun LocationCard(location: FavoriteLocationEntity) {
 @Composable
 fun SwipeToDeleteBox(
     location: FavoriteLocationEntity,
-    onDeleteInitiated: () -> Unit
+    weather: com.example.brizzy.data.weather.model.WeatherResponse?,
+    onDeleteInitiated: () -> Unit,
+    onClick: () -> Unit
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { dismissValue ->
@@ -155,7 +175,11 @@ fun SwipeToDeleteBox(
             }
         },
         content = {
-            LocationCard(location = location)
+            LocationCard(
+                location = location,
+                weather = weather,
+                onClick = onClick
+            )
         },
         enableDismissFromStartToEnd = false
     )

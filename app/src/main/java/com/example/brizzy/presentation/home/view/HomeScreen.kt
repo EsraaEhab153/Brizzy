@@ -94,15 +94,17 @@ fun HomeScreen(viewModel: HomeViewModel) {
     }
 
     LaunchedEffect(Unit) {
-        if (locationMethod == "Map") {
-            viewModel.getWeatherData(lat = mapLat, lon = mapLon)
-        } else {
-            permissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+        if (!viewModel.isFavoriteMode) {
+            if (locationMethod == "Map") {
+                viewModel.getWeatherData(lat = mapLat, lon = mapLon)
+            } else {
+                permissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
                 )
-            )
+            }
         }
     }
 
