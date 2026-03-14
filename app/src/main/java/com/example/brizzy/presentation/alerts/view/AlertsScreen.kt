@@ -31,6 +31,12 @@ import com.example.brizzy.presentation.alerts.viewModel.AlertsViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 import com.example.brizzy.R
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.Context
+import java.util.Calendar
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -255,34 +261,95 @@ fun DeleteAlertConfirmationDialog(show: Boolean, alertName: String, onConfirm: (
         )
     }
 }
+
 @Composable
 fun AddAlertDialog(onDismiss: () -> Unit, onSave: (AlertEntity) -> Unit) {
+    val context = LocalContext.current
     var isNotification by remember { mutableStateOf(true) }
-    var cityName by remember { mutableStateOf("Cairo") }
-    val currentTime = System.currentTimeMillis()
+    var cityName by remember { mutableStateOf("Alexandria") }
+    var startTime by remember { mutableStateOf(System.currentTimeMillis()) }
+    var endTime by remember { mutableStateOf(System.currentTimeMillis() + 86400000) }
+    val dateFormat = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
 
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = Color(0xFF0F1B3C),
         shape = RoundedCornerShape(24.dp),
-        title = { Text("New Alert", color = Color.White) },
+        title = { Text("New Alert", color = Color.White, fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
+
                 Text("Alert Type", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = isNotification, onClick = { isNotification = true }, colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF29B2DD), unselectedColor = Color.White))
-                    Text("Notification", color = Color.White)
-                    Spacer(modifier = Modifier.width(16.dp))
-                    RadioButton(selected = !isNotification, onClick = { isNotification = false }, colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFFF5252), unselectedColor = Color.White))
-                    Text("Alarm", color = Color.White)
+                    RadioButton(
+                        selected = isNotification,
+                        onClick = { isNotification = true },
+                        colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF29B2DD), unselectedColor = Color.White)
+                    )
+                    Text("Notification", color = Color.White, fontSize = 14.sp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    RadioButton(
+                        selected = !isNotification,
+                        onClick = { isNotification = false },
+                        colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFFF5252), unselectedColor = Color.White)
+                    )
+                    Text("Alarm", color = Color.White, fontSize = 14.sp)
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Time and City selection will be added next!", color = Color(0xFF29B2DD), fontSize = 12.sp)
+
+                Text("From", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
+                Surface(
+                    color = Color.White.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        showDateTimePicker(context, System.currentTimeMillis()) { selectedTime ->
+                            startTime = selectedTime
+                            if (startTime >= endTime) endTime = startTime + 3600000
+                        }
+                    }
+                ) {
+                    Text(
+                        text = dateFormat.format(Date(startTime)),
+                        color = Color.White,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text("To", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
+                Surface(
+                    color = Color.White.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        showDateTimePicker(context, startTime) { selectedTime ->
+                            endTime = selectedTime
+                        }
+                    }
+                ) {
+                    Text(
+                        text = dateFormat.format(Date(endTime)),
+                        color = Color.White,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
         },
         confirmButton = {
             Button(
-                onClick = { onSave(AlertEntity(cityName = cityName, lat = 30.0444, lon = 31.2357, startTime = currentTime, endTime = currentTime + 86400000, isNotification = isNotification)) },
+                onClick = {
+                    onSave(
+                        AlertEntity(
+                            cityName = cityName,
+                            lat = 31.2001,
+                            lon = 29.9187,
+                            startTime = startTime,
+                            endTime = endTime,
+                            isNotification = isNotification
+                        )
+                    )
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF29B2DD))
             ) { Text("Save", color = Color.White) }
         },
@@ -290,4 +357,34 @@ fun AddAlertDialog(onDismiss: () -> Unit, onSave: (AlertEntity) -> Unit) {
             TextButton(onClick = onDismiss) { Text("Cancel", color = Color.White.copy(alpha = 0.7f)) }
         }
     )
+}
+
+fun showDateTimePicker(
+    context: Context,
+    minTimeInMillis: Long,
+    onDateTimeSelected: (Long) -> Unit
+) {
+    val calendar = Calendar.getInstance()
+
+    val year = calendar.get(Calendar.YEAR)
+    val month = calendar.get(Calendar.MONTH)
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+    val hour = calendar.get(Calendar.HOUR_OF_DAY)
+    val minute = calendar.get(Calendar.MINUTE)
+
+    val datePickerDialog = DatePickerDialog(context, { _, selectedYear, selectedMonth, selectedDay ->
+        TimePickerDialog(context, { _, selectedHour, selectedMinute ->
+            val selectedCalendar = Calendar.getInstance()
+            selectedCalendar.set(selectedYear, selectedMonth, selectedDay, selectedHour, selectedMinute, 0)
+            if (selectedCalendar.timeInMillis < minTimeInMillis) {
+                Toast.makeText(context, "Please select a valid future time!", Toast.LENGTH_SHORT).show()
+            } else {
+                onDateTimeSelected(selectedCalendar.timeInMillis)
+            }
+
+        }, hour, minute, false).show()
+
+    }, year, month, day)
+    datePickerDialog.datePicker.minDate = minTimeInMillis
+    datePickerDialog.show()
 }
