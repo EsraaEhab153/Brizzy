@@ -22,6 +22,8 @@ import com.example.brizzy.data.weather.datasource.local.room.WeatherLocalDataSou
 import com.example.brizzy.data.weather.datasource.remote.WeatherRemoteDataSourceImpl
 import com.example.brizzy.data.weather.model.FavoriteLocationEntity
 import com.example.brizzy.presentation.alerts.view.AlertsScreen
+import com.example.brizzy.presentation.alerts.viewModel.AlertsViewModel
+import com.example.brizzy.presentation.alerts.viewModel.AlertsViewModelFactory
 import com.example.brizzy.presentation.favorite.view.FavoritesScreen
 import com.example.brizzy.presentation.favorite.viewModel.FavoritesViewModel
 import com.example.brizzy.presentation.favorite.viewModel.FavoritesViewModelFactory
@@ -110,7 +112,18 @@ fun SetupNavHost() {
 
             // Alerts Screen
             composable<ScreenRouts.Alerts> {
-                AlertsScreen()
+                val database = WeatherDatabase.getDatabase(context)
+                val repository = remember {
+                    WeatherRepositoryImp(
+                        remoteDataSource = WeatherRemoteDataSourceImpl(),
+                        localDataSource = WeatherLocalDataSource(database.favoriteLocationDao(), database.alertDao())
+                    )
+                }
+
+                val alertsFactory = remember { AlertsViewModelFactory(repository) }
+                val alertsViewModel: AlertsViewModel = viewModel(factory = alertsFactory)
+
+                AlertsScreen(viewModel = alertsViewModel)
             }
 
             // Settings Screen
