@@ -6,6 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.example.brizzy.presentation.favorite.viewModel.FavoritesViewModel
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,12 +24,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.brizzy.R
 import com.example.brizzy.data.weather.model.FavoriteLocationEntity
 import com.example.brizzy.data.weather.model.WeatherResponse
+import com.example.brizzy.utils.getWeatherBackgroundColors
+import com.example.brizzy.utils.getWeatherLottieAnim
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,19 +147,49 @@ fun LocationCard(
     weather: WeatherResponse?,
     onClick: () -> Unit
 ) {
+    val iconCode = weather?.list?.get(0)?.weather?.get(0)?.icon ?: "01d"
+    val targetColors = getWeatherBackgroundColors(iconCode)
+
+    val topColor by animateColorAsState(
+        targetValue = targetColors[0],
+        animationSpec = tween(durationMillis = 1000),
+        label = "Top Color Animation"
+    )
+    val bottomColor by animateColorAsState(
+        targetValue = targetColors[1],
+        animationSpec = tween(durationMillis = 1000),
+        label = "Bottom Color Animation"
+    )
+
+    val animatedGradient = Brush.verticalGradient(listOf(topColor, bottomColor))
+
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp).height(100.dp).clickable { onClick() },
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp).height(100.dp).background(brush = animatedGradient, shape = RoundedCornerShape(24.dp)).clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.05f)),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
     ) {
         Row(modifier = Modifier.fillMaxSize().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(location.cityName, color = Color.White, modifier = Modifier.weight(1f))
             if (weather != null) {
                 val temp = weather.list?.get(0)?.main?.temp?.toInt() ?: 0
-                val iconString = weather.list?.get(0)?.weather?.get(0)?.icon
+                val iconString = weather.list?.get(0)?.weather?.get(0)?.icon ?: "01d"
 
+                val animResId = getWeatherLottieAnim(iconString)
+
+                val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(animResId))
+                val progress by animateLottieCompositionAsState(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever
+                )
+
+                LottieAnimation(
+                    composition = composition,
+                    progress = { progress },
+                    modifier = Modifier.size(70.dp).padding(end = 16.dp),
+                    contentScale = ContentScale.Fit
+                )
                 Text("$temp°", color = Color.White, style = MaterialTheme.typography.headlineLarge)
             } else {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
