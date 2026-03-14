@@ -132,7 +132,7 @@ fun FavoritesHeader(
         }
         FloatingActionButton(
             onClick = onAddLocationClick,
-            containerColor = Color(0x6829B2DD),
+            containerColor = Color.White.copy(alpha = 0.1f),
             contentColor = Color.White,
             shape = CircleShape,
             modifier = Modifier.size(48.dp)

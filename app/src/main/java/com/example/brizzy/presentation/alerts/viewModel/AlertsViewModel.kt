@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.brizzy.data.weather.WeatherRepository
 import com.example.brizzy.data.weather.model.AlertEntity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -20,13 +21,13 @@ class AlertsViewModel(private val repository: WeatherRepository) : ViewModel() {
         )
 
     fun insertAlert(alert: AlertEntity) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.insertAlert(alert)
         }
     }
 
     fun deleteAlert(alert: AlertEntity) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.deleteAlert(alert)
         }
     }
