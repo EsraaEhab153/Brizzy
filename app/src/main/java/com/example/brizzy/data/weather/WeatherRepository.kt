@@ -1,5 +1,6 @@
 package com.example.brizzy.data.weather
 
+import com.example.brizzy.data.weather.model.AlertEntity
 import com.example.brizzy.data.weather.model.FavoriteLocationEntity
 import com.example.brizzy.data.weather.model.GeocodingResponseItem
 import com.example.brizzy.data.weather.model.WeatherResponse
@@ -12,4 +13,7 @@ interface WeatherRepository {
     fun getAllFavoriteLocations(): Flow<List<FavoriteLocationEntity>>
     suspend fun insertFavoriteLocation(location: FavoriteLocationEntity)
     suspend fun deleteFavoriteLocation(location: FavoriteLocationEntity)
+    fun getAllAlerts(): Flow<List<AlertEntity>>
+    fun insertAlert(alert: AlertEntity)
+    fun deleteAlert(alert: AlertEntity)
 }

@@ -71,9 +71,8 @@ fun SetupNavHost() {
 
             // Home Screen
             composable<ScreenRouts.Home> {
-                val context = LocalContext.current
                 val database = WeatherDatabase.getDatabase(context)
-                val localDataSource = WeatherLocalDataSource(database.favoriteLocationDao())
+                val localDataSource = WeatherLocalDataSource(database.favoriteLocationDao(),database.alertDao())
                 val remoteDataSource = WeatherRemoteDataSourceImpl()
 
                 val repository = WeatherRepositoryImp(
@@ -88,12 +87,11 @@ fun SetupNavHost() {
 
             // Favorites Screen
             composable<ScreenRouts.Favorite> {
-                val context = LocalContext.current
                 val database = WeatherDatabase.getDatabase(context)
                 val repository = remember {
                     WeatherRepositoryImp(
                         remoteDataSource = WeatherRemoteDataSourceImpl(),
-                        localDataSource = WeatherLocalDataSource(database.favoriteLocationDao())
+                        localDataSource = WeatherLocalDataSource(database.favoriteLocationDao(), database.alertDao())
                     )
                 }
 
@@ -133,7 +131,7 @@ fun SetupNavHost() {
                     val favoriteDao = database.favoriteLocationDao()
                     WeatherRepositoryImp(
                         remoteDataSource = WeatherRemoteDataSourceImpl(),
-                        localDataSource = WeatherLocalDataSource(favoriteDao)
+                        localDataSource = WeatherLocalDataSource(favoriteDao,database.alertDao())
                     )
                 }
                 val mapFactory = remember { MapViewModelFactory(repository) }
@@ -150,13 +148,12 @@ fun SetupNavHost() {
             }
 
             composable<ScreenRouts.MapAddFavorite> {
-                val context = LocalContext.current
                 val scope = rememberCoroutineScope()
                 val database = WeatherDatabase.getDatabase(context)
                 val repository = remember {
                     WeatherRepositoryImp(
                         remoteDataSource = WeatherRemoteDataSourceImpl(),
-                        localDataSource = WeatherLocalDataSource(database.favoriteLocationDao())
+                        localDataSource = WeatherLocalDataSource(database.favoriteLocationDao(),database.alertDao())
                     )
                 }
                 val mapFactory = remember { MapViewModelFactory(repository) }
@@ -183,8 +180,7 @@ fun SetupNavHost() {
                 val details = backStackEntry.toRoute<ScreenRouts.FavoriteDetails>()
 
                 val remoteDataSource = WeatherRemoteDataSourceImpl()
-                val context = LocalContext.current
-                val localDataSource = WeatherLocalDataSource(WeatherDatabase.getDatabase(context).favoriteLocationDao())
+                val localDataSource = WeatherLocalDataSource(WeatherDatabase.getDatabase(context).favoriteLocationDao(),WeatherDatabase.getDatabase(context).alertDao())
                 val repository = WeatherRepositoryImp(remoteDataSource, localDataSource)
 
                 val factory = HomeViewModelFactory(

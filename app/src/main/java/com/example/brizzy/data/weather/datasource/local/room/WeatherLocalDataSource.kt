@@ -1,11 +1,15 @@
 package com.example.brizzy.data.weather.datasource.local.room
 
+import com.example.brizzy.data.weather.model.AlertEntity
 import com.example.brizzy.data.weather.model.FavoriteLocationEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class WeatherLocalDataSource(private val favoriteLocationDao: FavoriteLocationDao) {
+class WeatherLocalDataSource(
+    private val favoriteLocationDao: FavoriteLocationDao,
+    private val alertDao: AlertDao
+) {
 
     suspend fun insertFavoriteLocation(location: FavoriteLocationEntity) {
         withContext(Dispatchers.IO) {
@@ -21,5 +25,17 @@ class WeatherLocalDataSource(private val favoriteLocationDao: FavoriteLocationDa
 
     fun getAllFavoriteLocations(): Flow<List<FavoriteLocationEntity>> {
         return favoriteLocationDao.getAllFavoriteLocations()
+    }
+
+    fun insertAlert(alert: AlertEntity) {
+        alertDao.insertAlert(alert)
+    }
+
+    fun deleteAlert(alert: AlertEntity) {
+        alertDao.deleteAlert(alert)
+    }
+
+    fun getAllAlerts(): Flow<List<AlertEntity>> {
+        return alertDao.getAllAlerts()
     }
 }
