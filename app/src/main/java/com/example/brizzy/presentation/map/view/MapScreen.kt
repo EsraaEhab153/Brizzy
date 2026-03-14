@@ -1,6 +1,7 @@
 package com.example.brizzy.presentation.map.view
 
-import android.R
+import android.content.Context
+import android.location.Geocoder
 import android.preference.PreferenceManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,24 +15,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.brizzy.presentation.map.viewModel.MapViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
     viewModel: MapViewModel,
-    onLocationSelected: (lat: Double, lon: Double) -> Unit
+    onLocationSelected: (cityName: String,lat: Double, lon: Double) -> Unit
 ) {
     val context = LocalContext.current
     var selectedPoint by remember { mutableStateOf<GeoPoint?>(null) }
@@ -139,18 +143,45 @@ fun MapScreen(
                 }
             }
         }
-
+        val scope = rememberCoroutineScope()
         if (selectedPoint != null) {
             Button(
-                onClick = { onLocationSelected(selectedPoint!!.latitude, selectedPoint!!.longitude) },
+                onClick = {
+                    scope.launch {
+                        val finalCityName = if (searchQuery.isNotBlank()) {
+                            searchQuery
+                        } else {
+                             getCityNameFromCoordinates(context, selectedPoint!!.latitude, selectedPoint!!.longitude)
+                        }
+                        onLocationSelected(finalCityName, selectedPoint!!.latitude, selectedPoint!!.longitude)
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF29B2DD)),
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 100.dp, start = 24.dp, end = 24.dp)
                     .fillMaxWidth()
             ) {
-                Text(text = "Confirm Location", color = Color.White)
+                Text("Confirm Location", color = Color.White)
             }
+        }
+    }
+}
+
+suspend fun getCityNameFromCoordinates(context: Context, lat: Double, lon: Double): String {
+    return withContext(Dispatchers.IO) {
+        try {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(lat, lon, 1)
+
+            if (!addresses.isNullOrEmpty()) {
+                val address = addresses[0]
+                address.locality ?: address.subAdminArea ?: address.adminArea ?: address.countryName ?: "Unknown Location"
+            } else {
+                "Unknown Location"
+            }
+        } catch (e: Exception) {
+            "Pinned Location"
         }
     }
 }

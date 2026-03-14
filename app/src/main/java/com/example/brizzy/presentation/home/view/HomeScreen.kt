@@ -53,6 +53,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.example.brizzy.data.weather.model.City
 import com.example.brizzy.presentation.theme.WeatherThemeState
+import com.example.brizzy.utils.getWeatherBackgroundColors
+import com.example.brizzy.utils.getWeatherLottieAnim
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -94,15 +96,17 @@ fun HomeScreen(viewModel: HomeViewModel) {
     }
 
     LaunchedEffect(Unit) {
-        if (locationMethod == "Map") {
-            viewModel.getWeatherData(lat = mapLat, lon = mapLon)
-        } else {
-            permissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+        if (!viewModel.isFavoriteMode) {
+            if (locationMethod == "Map") {
+                viewModel.getWeatherData(lat = mapLat, lon = mapLon)
+            } else {
+                permissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -521,55 +525,6 @@ fun DailyItem(item: ForecastItem,currentTempUnit:String) {
                 color = Color.White.copy(alpha = 0.6f)
             )
         }
-    }
-}
-
-@RawRes
-fun getWeatherLottieAnim(iconCode: String): Int {
-    return when (iconCode) {
-        "01d" -> R.raw.sunny
-        "01n" -> R.raw.weather_night
-
-
-        "02d" -> R.raw.cloudy_day
-        "02n" -> R.raw.weather_cloudy_night
-
-        "03d", "03n",
-        "04d", "04n" -> R.raw.weather_windy
-
-
-        "09d", "09n" -> R.raw.rain_icon
-
-        "10d" -> R.raw.weather_partly_shower
-        "10n" -> R.raw.weather_rainy_night
-
-        "11d", "11n" -> R.raw.weather_storm
-
-        "13d", "13n" -> R.raw.snowing
-
-        "50d", "50n" -> R.raw.mist
-
-        else -> R.raw.weather_windy
-    }
-}
-
-fun getWeatherBackgroundColors(iconCode: String?): List<Color> {
-    return when (iconCode) {
-        "01d" -> listOf(Color(0xFF29B2DD), Color(0xFF33AADD))
-
-        "01n" -> listOf(Color(0xFF08244F), Color(0xFF134CB5))
-
-        "02d", "03d", "04d" -> listOf(Color(0xFF5983A8), Color(0xFF86A8C9))
-
-        "02n", "03n", "04n" -> listOf(Color(0xFF1E2836), Color(0xFF304052))
-
-        "09d", "10d", "11d", "50d" -> listOf(Color(0xFF4A5E6D), Color(0xFF677E90))
-
-        "09n", "10n", "11n", "50n" -> listOf(Color(0xFF141E30), Color(0xFF243B55))
-
-        "13d", "13n" -> listOf(Color(0xFF6A93CB), Color(0xFFA4BFE3))
-
-        else -> listOf(Color(0xFF2B70E4), Color(0xFF0F2B6B))
     }
 }
 

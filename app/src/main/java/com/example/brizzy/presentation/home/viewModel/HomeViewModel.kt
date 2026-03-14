@@ -17,7 +17,8 @@ import kotlinx.coroutines.flow.stateIn
 
 class HomeViewModel(
     private val repository: WeatherRepository,
-    private val prefsManager: SettingsPreferencesManager
+    private val prefsManager: SettingsPreferencesManager,
+    val isFavoriteMode: Boolean = false
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<WeatherResponse>>(UiState.Loading)
@@ -77,13 +78,15 @@ class HomeViewModel(
 //    }
 //}
 
-class HomeViewModelFactory(private val repository: WeatherRepository,
-                           private val prefsManager: SettingsPreferencesManager
+class HomeViewModelFactory(
+    private val repository: WeatherRepository,
+    private val prefsManager: SettingsPreferencesManager,
+    private val isFavoriteMode: Boolean = false
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(repository,prefsManager) as T
+            return HomeViewModel(repository, prefsManager, isFavoriteMode) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
