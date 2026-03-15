@@ -347,7 +347,7 @@ fun WeatherDetailsGrid(currentWeather: ForecastItem,city: City,currentTempUnit:S
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 WeatherDetailChip(iconRes = R.drawable.sunrise, title = "Sunrise", value = sunriseTime, modifier = Modifier.weight(1f))
-               WeatherDetailChip(iconRes = R.drawable.dawn, title = "Sunset", value = sunsetTime, modifier = Modifier.weight(1f))
+                WeatherDetailChip(iconRes = R.drawable.dawn, title = "Sunset", value = sunsetTime, modifier = Modifier.weight(1f))
             }
         }
     }

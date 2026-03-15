@@ -1,4 +1,51 @@
 <resources>
     <string name="app_name">Brizzy</string>
     <string name="title_activity_splash_screen">SplashScreen</string>
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="customize_your_Brizzy_experience">Customize your Brizzy experience</string>
+    <string name="units">Units</string>
+    <string name="temperature">Temperature</string>
+    <string name="wind_speed">Wind Speed</string>
+    <string name="currently">currently</string>
+    <string name="celsius">Celsius</string>
+    <string name="fahrenheit">Fahrenheit</string>
+    <string name="kelvin">Kelvin</string>
+    <string name="m_s">m/s</string>
+    <string name="location_method">Location Method</string>
+    <string name="gps">GPS</string>
+    <string name="map">Map</string>
+    <string name="english">English</string>
+    <string name="arabic">Arabic</string>
+    <string name="Add_Alert">Add Alert +</string>
+    <string name="alerts">Alerts</string>
+    <string name="active">Active</string>
+    <string name="total">Total</string>
+    <string name="no_active_alerts">No Active Alerts</string>
+    <string name="favorites">Favorites</string>
+    <string name="no_favorites">No Favorite locations yet</string>
+    <string name="click_to_add_location">Click + to add some</string>
+    <string name="saved_locations">Saved Locations</string>
+    <string name="hourly_forecast">Hourly Forecast</string>
+    <string name="five_days_forecast">5 Days Forecast</string>
+    <string name="feels">Feels</string>
+    <string name="feels_like">Feels Like</string>
+    <string name="humidity">Humidity</string>
+    <string name="pressure">Pressure</string>
+    <string name="visibility">Visibility</string>
+    <string name="wind">Wind</string>
+    <string name="clouds">Clouds</string>
+    <string name="sunset">Sunset</string>
+    <string name="sunrise">Sunrise</string>
+    <string name="notification_alert">notification alert</string>
+    <string name="alarm_sound_alert">alarm sound alert</string>
+    <string name="location">Location</string>
+
+
+
+
+
+
+
+
 </resources>
