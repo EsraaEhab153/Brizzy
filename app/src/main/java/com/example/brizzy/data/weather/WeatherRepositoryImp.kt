@@ -1,5 +1,6 @@
 package com.example.brizzy.data.weather
 
+import com.example.brizzy.data.weather.datasource.local.room.IWeatherLocalDataSource
 import com.example.brizzy.data.weather.datasource.local.room.WeatherLocalDataSource
 import com.example.brizzy.data.weather.datasource.remote.WeatherRemoteDataSource
 import com.example.brizzy.data.weather.model.AlertEntity
@@ -12,7 +13,7 @@ import kotlinx.coroutines.flow.flow
 
 class WeatherRepositoryImp(
     private val remoteDataSource: WeatherRemoteDataSource,
-    private val localDataSource: WeatherLocalDataSource
+    private val localDataSource: IWeatherLocalDataSource
 ) : WeatherRepository {
 
     override suspend fun getWeather(lat: Double, lon: Double): Flow<WeatherResponse> {

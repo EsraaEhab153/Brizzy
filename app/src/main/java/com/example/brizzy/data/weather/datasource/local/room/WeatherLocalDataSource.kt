@@ -9,33 +9,33 @@ import kotlinx.coroutines.withContext
 class WeatherLocalDataSource(
     private val favoriteLocationDao: FavoriteLocationDao,
     private val alertDao: AlertDao
-) {
+): IWeatherLocalDataSource {
 
-    suspend fun insertFavoriteLocation(location: FavoriteLocationEntity) {
+    override suspend fun insertFavoriteLocation(location: FavoriteLocationEntity) {
         withContext(Dispatchers.IO) {
             favoriteLocationDao.insertFavoriteLocation(location)
         }
     }
 
-    suspend fun deleteFavoriteLocation(location: FavoriteLocationEntity) {
+    override suspend fun deleteFavoriteLocation(location: FavoriteLocationEntity) {
         withContext(Dispatchers.IO) {
             favoriteLocationDao.deleteFavoriteLocation(location)
         }
     }
 
-    fun getAllFavoriteLocations(): Flow<List<FavoriteLocationEntity>> {
+    override fun getAllFavoriteLocations(): Flow<List<FavoriteLocationEntity>> {
         return favoriteLocationDao.getAllFavoriteLocations()
     }
 
-    fun insertAlert(alert: AlertEntity) {
+    override fun insertAlert(alert: AlertEntity) {
         alertDao.insertAlert(alert)
     }
 
-    fun deleteAlert(alert: AlertEntity) {
+    override fun deleteAlert(alert: AlertEntity) {
         alertDao.deleteAlert(alert)
     }
 
-    fun getAllAlerts(): Flow<List<AlertEntity>> {
+    override fun getAllAlerts(): Flow<List<AlertEntity>> {
         return alertDao.getAllAlerts()
     }
 }
