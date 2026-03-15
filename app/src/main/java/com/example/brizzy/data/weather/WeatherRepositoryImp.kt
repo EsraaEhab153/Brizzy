@@ -2,6 +2,7 @@ package com.example.brizzy.data.weather
 
 import com.example.brizzy.data.weather.datasource.local.room.WeatherLocalDataSource
 import com.example.brizzy.data.weather.datasource.remote.WeatherRemoteDataSource
+import com.example.brizzy.data.weather.model.AlertEntity
 import com.example.brizzy.data.weather.model.FavoriteLocationEntity
 import com.example.brizzy.data.weather.model.GeocodingResponseItem
 import com.example.brizzy.data.weather.model.WeatherResponse
@@ -55,5 +56,17 @@ class WeatherRepositoryImp(
 
     override suspend fun deleteFavoriteLocation(location: FavoriteLocationEntity) {
         localDataSource.deleteFavoriteLocation(location)
+    }
+
+    override fun getAllAlerts(): Flow<List<AlertEntity>> {
+        return localDataSource.getAllAlerts()
+    }
+
+    override fun insertAlert(alert: AlertEntity) {
+        localDataSource.insertAlert(alert)
+    }
+
+    override fun deleteAlert(alert: AlertEntity) {
+        localDataSource.deleteAlert(alert)
     }
 }
