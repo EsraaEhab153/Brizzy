@@ -122,8 +122,9 @@ fun SetupNavHost() {
 
                 val alertsFactory = remember { AlertsViewModelFactory(repository) }
                 val alertsViewModel: AlertsViewModel = viewModel(factory = alertsFactory)
+                val mapViewModel: MapViewModel = viewModel(factory = MapViewModelFactory(repository))
 
-                AlertsScreen(viewModel = alertsViewModel)
+                AlertsScreen(viewModel = alertsViewModel,mapViewModel = mapViewModel)
             }
 
             // Settings Screen
