@@ -1,5 +1,6 @@
 package com.example.brizzy.presentation.alerts.view
 
+import android.Manifest
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -34,13 +35,29 @@ import com.example.brizzy.R
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
+import android.os.Build
 import java.util.Calendar
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertsScreen(viewModel: AlertsViewModel) {
+    val context = LocalContext.current
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+        }
+    }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
     val alerts by viewModel.alerts.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -105,7 +122,7 @@ fun AlertsScreen(viewModel: AlertsViewModel) {
             AddAlertDialog(
                 onDismiss = { showAddDialog = false },
                 onSave = { newAlert ->
-                    viewModel.insertAlert(newAlert)
+                    viewModel.insertAlert(newAlert, context)
                     showAddDialog = false
                 }
             )
