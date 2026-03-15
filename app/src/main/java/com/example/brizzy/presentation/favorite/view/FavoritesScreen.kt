@@ -66,10 +66,10 @@ fun FavoritesScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                       Image(
-                           painter = painterResource(id = R.drawable.no_favorites),
-                           contentDescription = "no favorite places",
-                       )
+                        Image(
+                            painter = painterResource(id = R.drawable.no_favorites),
+                            contentDescription = "no favorite places",
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "No favorite locations yet.",

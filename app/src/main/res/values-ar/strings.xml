@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="app_name">Brizzy</string>
+<string name="title_activity_splash_screen">شاشة البداية</string>
+<string name="settings">الإعدادات</string>
+<string name="language">اللغة</string>
+<string name="customize_your_Brizzy_experience">خصص تجربتك مع بريزي</string>
+<string name="units">الوحدات</string>
+<string name="temperature">درجة الحرارة</string>
+<string name="wind_speed">سرعة الرياح</string>
+<string name="currently">حالياً</string>
+<string name="celsius">سيلزيوس (مئوية)</string>
+<string name="fahrenheit">فهرنهايت</string>
+<string name="kelvin">كلفن</string>
+<string name="m_s">م/ث</string>
+<string name="location_method">طريقة تحديد الموقع</string>
+<string name="gps">GPS</string>
+<string name="map">الخريطة</string>
+<string name="english">الإنجليزية</string>
+<string name="arabic">العربية</string>
+<string name="Add_Alert">إضافة تنبيه +</string>
+<string name="alerts">التنبيهات</string>
+<string name="active">نشط</string>
+<string name="total">الإجمالي</string>
+<string name="no_active_alerts">لا توجد تنبيهات نشطة</string>
+<string name="favorites">المفضلة</string>
+<string name="no_favorites">لا توجد مواقع مفضلة بعد</string>
+<string name="click_to_add_location">اضغط + لإضافة بعض المواقع</string>
+<string name="saved_locations">المواقع المحفوظة</string>
+<string name="hourly_forecast">توقعات كل ساعة</string>
+<string name="five_days_forecast">توقعات 5 أيام</string>
+<string name="feels">الإحساس</string>
+<string name="feels_like">الإحساس الفعلي</string>
+<string name="humidity">الرطوبة</string>
+<string name="pressure">الضغط</string>
+<string name="visibility">الرؤية</string>
+<string name="wind">الرياح</string>
+<string name="clouds">السحب</string>
+<string name="sunset">الغروب</string>
+<string name="sunrise">الشروق</string>
+<string name="notification_alert">تنبه اشعارات</string>
+<string name="alarm_sound_alert">صوت تنبيه منبه</string>
+<string name="location">الموقع</string>
+</resources>
